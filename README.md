@@ -244,6 +244,6 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 **⭐ If you find Julie helpful, please consider giving it a star! ⭐**
 
-Made with ❤️ by [Your Name](https://github.com/yourusername)
+Made with ❤️ by [Infinit-X](https://github.com/yourusername)
 
 </div>
