@@ -1,0 +1,329 @@
+# Julie AI Assistant - .gitignore
+
+## Visual Studio / Visual Studio Code
+.vs/
+.vscode/
+*.swp
+*.swo
+*~
+
+## User-specific files
+*.rsuser
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+
+## Build results
+[Dd]ebug/
+[Dd]ebugPublic/
+[Rr]elease/
+[Rr]eleases/
+x64/
+x86/
+[Aa][Rr][Mm]/
+[Aa][Rr][Mm]64/
+bld/
+[Bb]in/
+[Oo]bj/
+[Ll]og/
+
+## .NET Core / .NET 8
+project.lock.json
+project.fragment.lock.json
+artifacts/
+
+## NuGet
+*.nupkg
+# NuGet Symbol Packages
+*.snupkg
+# The packages folder can be ignored because of Package Restore
+**/[Pp]ackages/*
+# except build/, which is used as an MSBuild target.
+!**/[Pp]ackages/build/
+# Uncomment if necessary however generally it will be regenerated when needed
+#!**/[Pp]ackages/repositories.config
+# NuGet v3's project.json files produces more ignorable files
+*.nuget.props
+*.nuget.targets
+
+## Microsoft Azure Build Output
+csx/
+*.build.csdef
+
+## Microsoft Azure Emulator
+ecf/
+rcf/
+
+## Windows Store app package directories and files
+AppPackages/
+BundleArtifacts/
+Package.StoreAssociation.xml
+_pkginfo.txt
+*.appx
+*.msix
+
+## Visual C++ cache files
+ipch/
+*.aps
+*.ncb
+*.opendb
+*.opensdf
+*.sdf
+*.cachefile
+*.VC.db
+*.VC.VC.opendb
+
+## Visual Studio profiler
+*.psess
+*.vsp
+*.vspx
+*.sap
+
+## Visual Studio Trace Files
+*.e2e
+
+## TFS 2012 Local Workspace
+$tf/
+
+## Guidance Automation Toolkit
+*.gpState
+
+## ReSharper
+_ReSharper*/
+*.[Rr]e[Ss]harper
+*.DotSettings.user
+
+## JetBrains Rider
+.idea/
+*.sln.iml
+
+## CodeRush
+.cr/
+
+## Python Tools for Visual Studio (PTVS)
+__pycache__/
+*.pyc
+
+## Cake
+tools/**
+!tools/packages.config
+
+## Tabs Studio
+*.tss
+
+## Telerik's JustMock configuration file
+*.jmconfig
+
+## BizTalk build output
+*.btp.cs
+*.btm.cs
+*.odx.cs
+*.xsd.cs
+
+## OpenCover UI analysis results
+OpenCover/
+
+## Azure Stream Analytics local run output
+ASALocalRun/
+
+## MSBuild Binary and Structured Log
+*.binlog
+
+## NVidia Nsight GPU debugger configuration file
+*.nvuser
+
+## MFractors (Xamarin productivity tool) working folder
+.mfractor/
+
+## Local History for Visual Studio
+.localhistory/
+
+## BeatPulse healthcheck temp database
+healthchecksdb
+
+## Backup folder for Package Reference Convert tool in Visual Studio 2017
+MigrationBackup/
+
+## Ionide (cross platform F# VS Code tools) working folder
+.ionide/
+
+# Julie-specific ignores
+
+## API Keys and Secrets
+appsettings.local.json
+appsettings.*.json
+!appsettings.json
+!appsettings.Development.json
+secrets.json
+*.key
+apikeys.txt
+
+## User Settings
+user-settings.json
+user-preferences.json
+settings.local.json
+
+## Audio/Media Files (temporary)
+temp_audio/
+recorded_audio/
+*.wav
+*.mp3
+*.mp4
+!assets/sounds/*.wav
+!assets/sounds/*.mp3
+
+## Screen Capture Files (temporary)
+screenshots/
+screen_captures/
+temp_images/
+*.png
+*.jpg
+*.jpeg
+!assets/images/*.png
+!assets/images/*.jpg
+!docs/images/*.png
+!readme/images/*.png
+
+## Logs
+logs/
+*.log
+*.log.*
+log-*.txt
+
+## Database files (if any)
+*.db
+*.sqlite
+*.sqlite3
+
+## Windows App SDK / WinUI 3 specific
+*.appxupload
+*.msixupload
+Package.appxmanifest
+BundleArtifacts/
+
+## Windows Store Association
+Package.StoreAssociation.xml
+
+## Generated files
+Generated Files/
+GeneratedAssemblyInfo.cs
+
+## User-specific configuration
+launchSettings.json
+
+## Temporary files
+*.tmp
+*.temp
+temp/
+tmp/
+
+## macOS
+.DS_Store
+
+## Linux
+*~
+
+## Windows thumbnail cache files
+Thumbs.db
+Thumbs.db:encryptable
+ehthumbs.db
+ehthumbs_vista.db
+
+## Windows Installer files
+*.cab
+*.msi
+*.msix
+*.msm
+*.msp
+
+## Windows shortcuts
+*.lnk
+
+## JetBrains IDEs
+.idea/
+
+## Development Environment
+.env
+.env.local
+.env.development
+.env.production
+
+## Coverage reports
+coverage/
+*.coverage
+*.coveragexml
+
+## Testing
+TestResults/
+[Tt]est[Rr]esult*/
+*.trx
+
+## Benchmark results
+BenchmarkDotNet.Artifacts/
+
+## ASP.NET Scaffolding
+ScaffoldingReadMe.txt
+
+## StyleCop
+StyleCopReport.xml
+
+## Files built by Visual Studio
+*_i.c
+*_p.c
+*_h.h
+*.ilk
+*.meta
+*.obj
+*.iobj
+*.pch
+*.pdb
+*.ipdb
+*.pgc
+*.pgd
+*.rsp
+*.sbr
+*.tlb
+*.tli
+*.tlh
+*.tmp_proj
+*_wpftmp.csproj
+*.tlog
+*.vspscc
+*.vssscc
+.builds
+*.pidb
+*.svclog
+*.scc
+
+## Chutzpah Test files
+_Chutzpah*
+
+## Visual C++ cache files
+ipch/
+*.aps
+*.ncb
+*.opendb
+*.opensdf
+*.sdf
+*.cachefile
+*.VC.db
+*.VC.VC.opendb
+
+## Visual Studio cache files
+# files ending in .cache can be ignored
+*.[Cc]ache
+# but keep track of directories ending in .cache
+!?*.[Cc]ache/
+
+# Documentation files (private development notes)
+guidelines.md
+api-integration-guide.md
+project-structure.md
+ui-ux-design-guide.md
+DEVELOPMENT_PROGRESS.md
+
+# Keep public documentation
+!README.md
+!CONTRIBUTING.md
+!LICENSE

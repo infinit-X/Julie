@@ -1,0 +1,17 @@
+<Window x:Class="Julie.UI.Views.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    
+    <Grid>
+        <NavigationView x:Name="MainNavigationView" 
+                       IsSettingsVisible="True"
+                       Header="Julie AI Assistant">
+            <NavigationView.MenuItems>
+                <NavigationViewItem Content="Chat" Tag="Chat" Icon="Message"/>
+                <NavigationViewItem Content="Settings" Tag="Settings" Icon="Setting"/>
+            </NavigationView.MenuItems>
+            
+            <Frame x:Name="ContentFrame" Margin="20"/>
+        </NavigationView>
+    </Grid>
+</Window>
