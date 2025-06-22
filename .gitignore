@@ -180,6 +180,8 @@ temp_images/
 *.png
 *.jpg
 *.jpeg
+!assets/*.png
+!assets/*.jpg
 !assets/images/*.png
 !assets/images/*.jpg
 !docs/images/*.png
