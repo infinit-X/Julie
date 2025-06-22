@@ -45,9 +45,7 @@ namespace Julie.UI.ViewModels
         public ICommand ToggleListeningCommand { get; }
         public ICommand ShowSettingsCommand { get; }
         public ICommand HideSettingsCommand { get; }
-        public ICommand NewConversationCommand { get; }
-
-        public MainViewModel(
+        public ICommand NewConversationCommand { get; }        public MainViewModel(
             IJulieService julieService,
             ChatViewModel chatViewModel,
             SettingsViewModel settingsViewModel,
@@ -71,6 +69,9 @@ namespace Julie.UI.ViewModels
             _julieService.IsSpeakingChanged += OnIsSpeakingChanged;
             _julieService.MessageReceived += OnMessageReceived;
 
+            // Subscribe to settings events
+            _settingsViewModel.OnSettingsSaved += OnSettingsSaved;
+
             // Initialize with settings
             InitializeAsync();
         }
@@ -80,10 +81,9 @@ namespace Julie.UI.ViewModels
             try
             {
                 _logger.LogInformation("Initializing MainViewModel");
-                
-                // Load settings and initialize Julie service
-                await _settingsViewModel.LoadSettingsAsync();
-                var settings = _settingsViewModel.Settings;
+                  // Load settings and initialize Julie service
+                await SettingsViewModel.LoadSettingsAsync();
+                var settings = SettingsViewModel.Settings;
                 
                 if (settings != null)
                 {
@@ -104,7 +104,7 @@ namespace Julie.UI.ViewModels
             {
                 _logger.LogInformation("Connecting to Julie service");
                 
-                var settings = _settingsViewModel.Settings;
+                var settings = SettingsViewModel.Settings;
                 if (settings == null || string.IsNullOrEmpty(settings.ApiKey))
                 {
                     _logger.LogWarning("No API key configured");
@@ -165,7 +165,7 @@ namespace Julie.UI.ViewModels
             {
                 _logger.LogInformation("Starting new conversation");
                 var conversation = await _julieService.StartNewConversationAsync();
-                _chatViewModel.LoadConversation(conversation);
+                ChatViewModel.LoadConversation(conversation);
             }
             catch (Exception ex)
             {
@@ -186,12 +186,34 @@ namespace Julie.UI.ViewModels
 
         private void OnMessageReceived(object? sender, Message message)
         {
-            _chatViewModel.AddMessage(message);
+            ChatViewModel.AddMessage(message);
         }
 
         private void UpdateConnectionStatus()
         {
             ConnectionStatus = IsConnected ? "Connected" : "Disconnected";
+        }        private async void OnSettingsSaved()
+        {
+            try
+            {
+                // Check if we have a valid API key and try to connect
+                if (!string.IsNullOrEmpty(SettingsViewModel.ApiKey))
+                {
+                    ConnectionStatus = "Connecting...";
+                    await ConnectAsync();
+                }
+                else
+                {
+                    ConnectionStatus = "No API Key";
+                    IsConnected = false;
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Failed to connect after settings saved");
+                ConnectionStatus = "Connection Failed";
+                IsConnected = false;
+            }
         }
 
         public void Cleanup()

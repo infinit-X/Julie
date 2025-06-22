@@ -1,7 +1,8 @@
+using System;
+using System.Windows;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
-using Microsoft.UI.Xaml;
 using Julie.Core.API;
 using Julie.Core.Audio;
 using Julie.Core.Screen;
@@ -19,14 +20,24 @@ namespace Julie.App
     {
         private IHost? _host;
 
-        /// <summary>
-        /// Initializes the singleton application object. This is the first line of authored code
-        /// executed, and as such is the logical equivalent of main() or WinMain().
-        /// </summary>
-        public App()
+        protected override void OnStartup(StartupEventArgs e)
         {
-            this.InitializeComponent();
-            ConfigureServices();
+            try
+            {
+                ConfigureServices();
+                
+                // Create and show main window
+                var mainViewModel = GetService<MainViewModel>();
+                var mainWindow = new MainWindow(mainViewModel);
+                mainWindow.Show();
+                
+                base.OnStartup(e);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Application startup error: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                Current.Shutdown();
+            }
         }
 
         /// <summary>
@@ -54,9 +65,6 @@ namespace Julie.App
                     services.AddTransient<ChatViewModel>();
                     services.AddTransient<SettingsViewModel>();
 
-                    // Views
-                    services.AddTransient<MainWindow>();
-
                     // Logging
                     services.AddLogging(builder =>
                     {
@@ -66,34 +74,30 @@ namespace Julie.App
                     });
                 })
                 .Build();
+
+            // Start the host
+            _host.Start();
         }
 
         /// <summary>
         /// Gets a service from the dependency injection container
         /// </summary>
-        public static T GetService<T>() where T : class
+        public T GetService<T>() where T : class
         {
-            var app = (App)Current;
-            return app._host?.Services.GetRequiredService<T>() ?? throw new InvalidOperationException("Service not found");
+            try
+            {
+                return _host?.Services.GetRequiredService<T>() ?? throw new InvalidOperationException("Service not found");
+            }
+            catch (Exception ex)
+            {
+                throw new InvalidOperationException($"Failed to get service {typeof(T).Name}: {ex.Message}", ex);
+            }
         }
 
-        /// <summary>
-        /// Invoked when the application is launched.
-        /// </summary>
-        /// <param name="args">Details about the launch request and process.</param>
-        protected override void OnLaunched(Microsoft.UI.Xaml.LaunchActivatedEventArgs args)
-        {
-            var mainWindow = GetService<MainWindow>();
-            mainWindow.Activate();
-        }
-
-        /// <summary>
-        /// Invoked when the application is about to exit
-        /// </summary>
-        protected override void OnClosed(object sender, Microsoft.UI.Xaml.WindowEventArgs args)
+        protected override void OnExit(ExitEventArgs e)
         {
             _host?.Dispose();
-            base.OnClosed(sender, args);
+            base.OnExit(e);
         }
     }
 }

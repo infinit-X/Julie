@@ -1,5 +1,6 @@
-using Microsoft.UI.Xaml;
-using Microsoft.UI.Xaml.Controls;
+using System;
+using System.Windows;
+using System.Windows.Controls;
 using Julie.UI.ViewModels;
 
 namespace Julie.UI.Views
@@ -7,26 +8,42 @@ namespace Julie.UI.Views
     /// <summary>
     /// Main window for the Julie AI Assistant application
     /// </summary>
-    public sealed partial class MainWindow : Window
+    public partial class MainWindow : Window
     {
         public MainViewModel ViewModel { get; }
 
-        public MainWindow(MainViewModel viewModel)        {
-            this.InitializeComponent();
+        public MainWindow(MainViewModel viewModel)
+        {
+            InitializeComponent();
             ViewModel = viewModel;
+            DataContext = viewModel;
             
-            // Navigate to chat view by default
-            ContentFrame.Navigate(typeof(ChatView), ViewModel.ChatViewModel);
+            // Show chat view by default
+            ShowChatView();
         }
 
         private void ChatButton_Click(object sender, RoutedEventArgs e)
         {
-            ContentFrame.Navigate(typeof(ChatView), ViewModel.ChatViewModel);
+            ShowChatView();
         }
 
         private void SettingsButton_Click(object sender, RoutedEventArgs e)
         {
-            ContentFrame.Navigate(typeof(SettingsView), ViewModel.SettingsViewModel);
+            ShowSettingsView();
+        }
+
+        private void ShowChatView()
+        {
+            var chatView = new ChatView();
+            chatView.DataContext = ViewModel.ChatViewModel;
+            ContentFrame.Content = chatView;
+        }
+
+        private void ShowSettingsView()
+        {
+            var settingsView = new SettingsView();
+            settingsView.DataContext = ViewModel.SettingsViewModel;
+            ContentFrame.Content = settingsView;
         }
     }
 }

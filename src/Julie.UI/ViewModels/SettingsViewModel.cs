@@ -119,9 +119,7 @@ namespace Julie.UI.ViewModels
                 Settings = new UserSettings();
                 UpdateUIFromSettings();
             }
-        }
-
-        private async Task SaveSettingsAsync()
+        }        private async Task SaveSettingsAsync()
         {
             try
             {
@@ -141,6 +139,9 @@ namespace Julie.UI.ViewModels
 
                 IsDirty = false;
                 _logger.LogInformation("Settings saved successfully");
+
+                // Notify that settings were saved (for connection status update)
+                OnSettingsSaved?.Invoke();
             }
             catch (Exception ex)
             {
@@ -148,6 +149,9 @@ namespace Julie.UI.ViewModels
                 throw;
             }
         }
+
+        // Event to notify when settings are saved
+        public event Action? OnSettingsSaved;
 
         private async Task CancelChangesAsync()
         {

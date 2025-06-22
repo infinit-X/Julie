@@ -9,16 +9,15 @@ using Julie.Core.Models;
 namespace Julie.Services
 {
     /// <summary>
-    /// Main service implementation for Julie AI assistant functionality
+    /// Updated Julie service implementation using simple Gemini API HTTP client
     /// </summary>
     public class JulieService : IJulieService
     {
         private readonly ILogger<JulieService> _logger;
-        private readonly LiveApiClient _liveApiClient;
+        private readonly SimpleGeminiClient _geminiClient;
         private readonly List<Conversation> _conversations = new();
         private Conversation? _currentConversation;
         private bool _isInitialized;
-        private bool _isConnected;
         private bool _isSpeaking;
 
         public event EventHandler<Message>? MessageReceived;
@@ -26,32 +25,42 @@ namespace Julie.Services
         public event EventHandler<bool>? ConnectionStatusChanged;
 
         public Conversation? CurrentConversation => _currentConversation;
-        public bool IsConnected => _isConnected;
-        public bool IsSpeaking => _isSpeaking;
-
-        public JulieService(ILogger<JulieService> logger)
+        public bool IsConnected => _geminiClient?.IsConnected ?? false;
+        public bool IsSpeaking => _isSpeaking;        public JulieService(ILogger<JulieService> logger)
         {
             _logger = logger;
-            _liveApiClient = new LiveApiClient(logger);
+            // Create a logger for SimpleGeminiClient using the same logger factory
+            var loggerFactory = LoggerFactory.Create(builder => builder.SetMinimumLevel(LogLevel.Information));
+            var geminiLogger = loggerFactory.CreateLogger<SimpleGeminiClient>();
+            _geminiClient = new SimpleGeminiClient(geminiLogger);
 
-            // Wire up Live API events
-            _liveApiClient.MessageReceived += OnLiveApiMessageReceived;
-            _liveApiClient.Connected += OnLiveApiConnected;
-            _liveApiClient.Disconnected += OnLiveApiDisconnected;
-            _liveApiClient.Error += OnLiveApiError;
+            // Wire up Gemini API events
+            _geminiClient.MessageReceived += OnGeminiMessageReceived;
+            _geminiClient.ConnectionStatusChanged += OnGeminiConnectionStatusChanged;
+            _geminiClient.ErrorOccurred += OnGeminiErrorOccurred;
         }
 
         public async Task InitializeAsync(UserSettings settings)
         {
             try
             {
-                _logger.LogInformation("Initializing Julie service...");
+                _logger.LogInformation("Initializing Julie service with Gemini API...");
                 
-                // Connect to Live API
-                await _liveApiClient.ConnectAsync(settings.ApiKey);
+                if (string.IsNullOrEmpty(settings.ApiKey))
+                {
+                    throw new ArgumentException("API key is required", nameof(settings));
+                }                // Connect to Gemini API
+                var connected = await _geminiClient.ConnectAsync(settings.ApiKey);
                 
-                _isInitialized = true;
-                _logger.LogInformation("Julie service initialized successfully");
+                if (connected)
+                {
+                    _isInitialized = true;
+                    _logger.LogInformation("Julie service initialized successfully with Gemini API");
+                }
+                else
+                {
+                    throw new Exception("Failed to connect to Gemini API");
+                }
             }
             catch (Exception ex)
             {
@@ -81,7 +90,8 @@ namespace Julie.Services
 
                 _conversations.Add(conversation);
                 _currentConversation = conversation;
-                
+
+                _logger.LogInformation("New conversation started: {ConversationId}", conversation.Id);
                 return conversation;
             }
             catch (Exception ex)
@@ -93,30 +103,35 @@ namespace Julie.Services
 
         public async Task SendTextMessageAsync(string message)
         {
-            if (!_isInitialized || !_isConnected)
+            if (!_isInitialized || !IsConnected)
             {
-                throw new InvalidOperationException("Service not connected. Call InitializeAsync first.");
+                throw new InvalidOperationException("Service not initialized or not connected");
+            }
+
+            if (string.IsNullOrWhiteSpace(message))
+            {
+                throw new ArgumentException("Message cannot be empty", nameof(message));
             }
 
             try
             {
                 _logger.LogInformation("Sending text message: {Message}", message);
-                
+
                 // Add user message to current conversation
                 if (_currentConversation != null)
                 {
                     var userMessage = new Message
                     {
-                        Id = Guid.NewGuid().ToString(),
                         Role = MessageRole.User,
-                        Content = message,
-                        Timestamp = DateTime.UtcNow
+                        Text = message,
+                        Timestamp = DateTime.Now,
+                        IsComplete = true
                     };
+                    
                     _currentConversation.AddMessage(userMessage);
-                }
-
-                // Send to Live API
-                await _liveApiClient.SendMessageAsync(message);
+                    MessageReceived?.Invoke(this, userMessage);
+                }                // Send to Gemini API
+                await _geminiClient.SendTextMessageAsync(message);
             }
             catch (Exception ex)
             {
@@ -125,59 +140,204 @@ namespace Julie.Services
             }
         }
 
-        public async Task SendAudioMessageAsync(byte[] audioData)
+        public async Task SendTextMessageWithScreenContextAsync(string message, byte[] screenImageData)
         {
-            if (!_isInitialized || !_isConnected)
+            if (!_isInitialized || !IsConnected)
             {
-                throw new InvalidOperationException("Service not connected.");
+                throw new InvalidOperationException("Service not initialized or not connected");
             }
 
             try
             {
-                _logger.LogInformation("Sending audio message ({Length} bytes)", audioData.Length);
-                await _liveApiClient.SendAudioDataAsync(audioData);
+                _logger.LogInformation("Sending text message with screen context: {Message}", message);
+
+                // Add user message to current conversation
+                if (_currentConversation != null)
+                {
+                    var userMessage = new Message
+                    {
+                        Role = MessageRole.User,
+                        Text = message + " [Screen context included]",
+                        Timestamp = DateTime.Now,
+                        IsComplete = true
+                    };
+                    
+                    _currentConversation.AddMessage(userMessage);
+                    MessageReceived?.Invoke(this, userMessage);
+                }                // Send to Gemini API with screen context (placeholder for now)
+                await _geminiClient.SendTextMessageAsync(message + " [Note: Screen context feature will be implemented with Live API]");
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Failed to send audio message");
+                _logger.LogError(ex, "Failed to send text message with screen context");
                 throw;
             }
         }
 
-        public async Task SendScreenContextAsync(byte[] imageData)
+        public async Task SendVoiceMessageAsync(byte[] audioData)
         {
-            if (!_isInitialized || !_isConnected)
+            // For now, this is a placeholder. Voice processing would need additional implementation
+            // with the Live API for real-time audio processing
+            _logger.LogInformation("Voice message received (placeholder implementation)");
+            
+            // Convert to text placeholder for now
+            await SendTextMessageAsync("[Voice message - transcription not implemented yet]");
+        }
+
+        public async Task StartVoiceInputAsync()
+        {
+            _logger.LogInformation("Starting voice input (placeholder implementation)");
+            // Placeholder for voice input functionality
+            // This would integrate with the Live API for real-time voice processing
+        }
+
+        public async Task StopVoiceInputAsync()
+        {
+            _logger.LogInformation("Stopping voice input (placeholder implementation)");
+            // Placeholder for stopping voice input
+        }
+
+        public async Task DisconnectAsync()
+        {
+            try
             {
-                throw new InvalidOperationException("Service not connected.");
+                _logger.LogInformation("Disconnecting Julie service");
+                  if (_geminiClient != null)
+                {
+                    await _geminiClient.DisconnectAsync();
+                }
+                
+                _isInitialized = false;
+                _currentConversation = null;
+                
+                _logger.LogInformation("Julie service disconnected");
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error during disconnect");
+            }
+        }
+
+        public IEnumerable<Conversation> GetConversations()
+        {
+            return _conversations.AsReadOnly();
+        }
+
+        public Conversation? GetConversation(string id)
+        {
+            return _conversations.FirstOrDefault(c => c.Id == id);
+        }
+
+        public async Task DeleteConversationAsync(string id)
+        {
+            var conversation = _conversations.FirstOrDefault(c => c.Id == id);
+            if (conversation != null)
+            {
+                _conversations.Remove(conversation);
+                
+                if (_currentConversation?.Id == id)
+                {
+                    _currentConversation = null;
+                }
+                
+                _logger.LogInformation("Conversation deleted: {ConversationId}", id);
+            }
+        }
+
+        private void OnGeminiMessageReceived(object? sender, Message message)
+        {
+            try
+            {
+                _logger.LogInformation("Received message from Gemini: {Message}", message.Text);
+                
+                // Add to current conversation
+                if (_currentConversation != null)
+                {
+                    _currentConversation.AddMessage(message);
+                    _currentConversation.UpdatedAt = DateTime.UtcNow;
+                }
+                
+                // Forward to UI
+                MessageReceived?.Invoke(this, message);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error processing received message from Gemini");
+            }
+        }
+
+        private void OnGeminiConnectionStatusChanged(object? sender, bool isConnected)
+        {
+            _logger.LogInformation("Gemini connection status changed: {IsConnected}", isConnected);
+            ConnectionStatusChanged?.Invoke(this, isConnected);
+        }
+
+        private void OnGeminiErrorOccurred(object? sender, Exception exception)
+        {
+            _logger.LogError(exception, "Gemini API error occurred");
+            
+            // Create error message for UI
+            var errorMessage = new Message
+            {
+                Role = MessageRole.System,
+                Text = $"Error: {exception.Message}",
+                Timestamp = DateTime.Now,
+                IsComplete = true
+            };
+            
+            MessageReceived?.Invoke(this, errorMessage);
+        }
+        
+        public async Task SendAudioMessageAsync(byte[] audioData)
+        {
+            // For now, this is a placeholder for audio processing
+            _logger.LogInformation("Audio message received (placeholder implementation)");
+            
+            // Convert to text placeholder for now
+            await SendTextMessageAsync("[Audio message - transcription not implemented yet]");
+        }
+
+        public async Task SendScreenContextAsync(byte[] screenImageData)
+        {
+            if (!_isInitialized || !IsConnected)
+            {
+                throw new InvalidOperationException("Service not initialized or not connected");
             }
 
             try
             {
-                _logger.LogInformation("Sending screen context ({Length} bytes)", imageData.Length);
-                await _liveApiClient.SendImageDataAsync(imageData);
+                _logger.LogInformation("Processing screen context");
+
+                // Add screen context message to current conversation
+                if (_currentConversation != null)
+                {
+                    var screenMessage = new Message
+                    {
+                        Role = MessageRole.User,
+                        Text = "[Screen capture provided for context analysis]",
+                        Timestamp = DateTime.Now,
+                        IsComplete = true
+                    };
+                    
+                    _currentConversation.AddMessage(screenMessage);
+                    MessageReceived?.Invoke(this, screenMessage);
+                }
+
+                // Send to Gemini API with screen context placeholder
+                await _geminiClient.SendTextMessageAsync("Please analyze the screen content provided. [Note: Screen analysis feature will be implemented with multimodal capabilities]");
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Failed to send screen context");
+                _logger.LogError(ex, "Failed to process screen context");
                 throw;
             }
         }
 
         public async Task StopSpeakingAsync()
         {
-            try
-            {
-                _logger.LogInformation("Stopping speaking");
-                await _liveApiClient.InterruptAsync();
-                
-                _isSpeaking = false;
-                IsSpeakingChanged?.Invoke(this, false);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Failed to stop speaking");
-                throw;
-            }
+            _logger.LogInformation("Stopping speech (placeholder implementation)");
+            _isSpeaking = false;
+            IsSpeakingChanged?.Invoke(this, false);
         }
 
         public async Task UpdateConfigurationAsync(UserSettings settings)
@@ -186,12 +346,11 @@ namespace Julie.Services
             {
                 _logger.LogInformation("Updating configuration");
                 
-                // Update Live API configuration if needed
-                // This would reconnect with new settings
-                if (_isConnected)
+                // Reconnect with new settings if API key changed
+                if (!string.IsNullOrEmpty(settings.ApiKey) && _isInitialized)
                 {
-                    await _liveApiClient.DisconnectAsync();
-                    await _liveApiClient.ConnectAsync(settings.ApiKey);
+                    await _geminiClient.DisconnectAsync();
+                    await _geminiClient.ConnectAsync(settings.ApiKey);
                 }
             }
             catch (Exception ex)
@@ -199,20 +358,10 @@ namespace Julie.Services
                 _logger.LogError(ex, "Failed to update configuration");
                 throw;
             }
-        }
-
-        public async Task<Conversation[]> GetConversationHistoryAsync()
+        }        public async Task<Conversation[]> GetConversationHistoryAsync()
         {
-            try
-            {
-                _logger.LogInformation("Getting conversation history");
-                return _conversations.OrderByDescending(c => c.UpdatedAt).ToArray();
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Failed to get conversation history");
-                throw;
-            }
+            _logger.LogInformation("Getting conversation history");
+            return _conversations.ToArray();
         }
 
         public async Task LoadConversationAsync(string conversationId)
@@ -222,40 +371,19 @@ namespace Julie.Services
                 _logger.LogInformation("Loading conversation: {ConversationId}", conversationId);
                 
                 var conversation = _conversations.FirstOrDefault(c => c.Id == conversationId);
-                if (conversation == null)
+                if (conversation != null)
+                {
+                    _currentConversation = conversation;
+                    _logger.LogInformation("Conversation loaded successfully");
+                }
+                else
                 {
                     throw new ArgumentException($"Conversation not found: {conversationId}");
                 }
-
-                _currentConversation = conversation;
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Failed to load conversation");
-                throw;
-            }
-        }
-
-        public async Task DeleteConversationAsync(string conversationId)
-        {
-            try
-            {
-                _logger.LogInformation("Deleting conversation: {ConversationId}", conversationId);
-                
-                var conversation = _conversations.FirstOrDefault(c => c.Id == conversationId);
-                if (conversation != null)
-                {
-                    _conversations.Remove(conversation);
-                    
-                    if (_currentConversation?.Id == conversationId)
-                    {
-                        _currentConversation = null;
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Failed to delete conversation");
                 throw;
             }
         }
@@ -265,73 +393,26 @@ namespace Julie.Services
             try
             {
                 _logger.LogInformation("Shutting down Julie service");
-                
-                if (_isConnected)
-                {
-                    await _liveApiClient.DisconnectAsync();
-                }
-                
+                await DisconnectAsync();
+                _conversations.Clear();
+                _currentConversation = null;
                 _isInitialized = false;
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error during shutdown");
-                throw;
             }
-        }
-
-        private void OnLiveApiMessageReceived(object? sender, LiveApiMessageEventArgs e)
-        {
-            try
-            {
-                var message = new Message
-                {
-                    Id = Guid.NewGuid().ToString(),
-                    Role = MessageRole.Assistant,
-                    Content = e.Text ?? "",
-                    Timestamp = DateTime.UtcNow
-                };
-
-                // Add to current conversation
-                if (_currentConversation != null)
-                {
-                    _currentConversation.AddMessage(message);
-                    _currentConversation.UpdatedAt = DateTime.UtcNow;
-                }
-
-                MessageReceived?.Invoke(this, message);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error handling message received");
-            }
-        }
-
-        private void OnLiveApiConnected(object? sender, EventArgs e)
-        {
-            _isConnected = true;
-            _logger.LogInformation("Connected to Live API");
-            ConnectionStatusChanged?.Invoke(this, true);
-        }
-
-        private void OnLiveApiDisconnected(object? sender, EventArgs e)
-        {
-            _isConnected = false;
-            _logger.LogInformation("Disconnected from Live API");
-            ConnectionStatusChanged?.Invoke(this, false);
-        }
-
-        private void OnLiveApiError(object? sender, LiveApiErrorEventArgs e)
-        {
-            _logger.LogError("Live API error: {Error}", e.Error);
         }
 
         public void Dispose()
-        {
-            try
+        {            try
             {
-                ShutdownAsync().Wait(TimeSpan.FromSeconds(5));
-                _liveApiClient?.Dispose();
+                if (_geminiClient != null)
+                {
+                    _geminiClient.MessageReceived -= OnGeminiMessageReceived;
+                    _geminiClient.ConnectionStatusChanged -= OnGeminiConnectionStatusChanged;
+                    _geminiClient.ErrorOccurred -= OnGeminiErrorOccurred;
+                }
             }
             catch (Exception ex)
             {

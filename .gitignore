@@ -323,6 +323,11 @@ project-structure.md
 ui-ux-design-guide.md
 DEVELOPMENT_PROGRESS.md
 
+# API Documentation and Model Information
+# These files contain API documentation and available models information
+available_models.txt
+LiveAPI_documentation.txt
+
 # Keep public documentation
 !README.md
 !CONTRIBUTING.md

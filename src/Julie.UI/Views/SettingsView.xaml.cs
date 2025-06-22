@@ -1,4 +1,5 @@
-using Microsoft.UI.Xaml.Controls;
+using System.Windows;
+using System.Windows.Controls;
 using Julie.UI.ViewModels;
 
 namespace Julie.UI.Views
@@ -6,22 +7,21 @@ namespace Julie.UI.Views
     /// <summary>
     /// Settings view for configuring Julie AI Assistant
     /// </summary>
-    public sealed partial class SettingsView : Page
+    public partial class SettingsView : UserControl
     {
-        public SettingsViewModel ViewModel { get; }
+        public SettingsViewModel? ViewModel => DataContext as SettingsViewModel;
 
         public SettingsView()
         {
-            this.InitializeComponent();
+            InitializeComponent();
         }
 
-        protected override void OnNavigatedTo(Microsoft.UI.Xaml.Navigation.NavigationEventArgs e)
+        private void SaveButton_Click(object sender, RoutedEventArgs e)
         {
-            if (e.Parameter is SettingsViewModel viewModel)
+            if (ViewModel?.SaveCommand?.CanExecute(null) == true)
             {
-                DataContext = viewModel;
+                ViewModel.SaveCommand.Execute(null);
             }
-            base.OnNavigatedTo(e);
         }
     }
 }

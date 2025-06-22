@@ -1,41 +1,224 @@
-<Page x:Class="Julie.UI.Views.ChatView"
-      xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+<UserControl x:Class="Julie.UI.Views.ChatView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
     
-    <Grid>
+    <UserControl.Background>
+        <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
+            <GradientStop Color="#F8FAFC" Offset="0"/>
+            <GradientStop Color="#F1F5F9" Offset="0.5"/>
+            <GradientStop Color="#E2E8F0" Offset="1"/>
+        </LinearGradientBrush>
+    </UserControl.Background>
+      <UserControl.Resources>
+        <!-- Modern Input Style with Placeholder -->
+        <Style x:Key="ModernTextBoxStyle" TargetType="TextBox">
+            <Setter Property="Padding" Value="15,12"/>
+            <Setter Property="FontSize" Value="14"/>
+            <Setter Property="BorderThickness" Value="2"/>
+            <Setter Property="BorderBrush" Value="#E1E5E9"/>
+            <Setter Property="Background" Value="White"/>
+            <Setter Property="Foreground" Value="#2D3748"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="TextBox">
+                        <Border Background="{TemplateBinding Background}" 
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                CornerRadius="12">
+                            <Grid>
+                                <ScrollViewer x:Name="PART_ContentHost" 
+                                            Margin="{TemplateBinding Padding}"
+                                            VerticalAlignment="Center"/>
+                                <TextBlock Text="Type your message here..." 
+                                         Foreground="#A0AEC0"
+                                         Margin="{TemplateBinding Padding}"
+                                         VerticalAlignment="Center"
+                                         IsHitTestVisible="False">
+                                    <TextBlock.Style>
+                                        <Style TargetType="TextBlock">
+                                            <Setter Property="Visibility" Value="Collapsed"/>
+                                            <Style.Triggers>
+                                                <DataTrigger Binding="{Binding Text, RelativeSource={RelativeSource TemplatedParent}}" Value="">
+                                                    <Setter Property="Visibility" Value="Visible"/>
+                                                </DataTrigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </TextBlock.Style>
+                                </TextBlock>
+                            </Grid>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsFocused" Value="True">
+                                <Setter Property="BorderBrush" Value="#007ACC"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style><!-- Send Button Style -->
+        <Style x:Key="SendButtonStyle" TargetType="Button">
+            <Setter Property="Background" Value="#007ACC"/>
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Padding" Value="24,8"/>
+            <Setter Property="Width" Value="80"/>
+            <Setter Property="Height" Value="36"/>
+            <Setter Property="FontSize" Value="13"/>
+            <Setter Property="FontWeight" Value="Medium"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border Background="{TemplateBinding Background}" 
+                                CornerRadius="8">
+                            <ContentPresenter HorizontalAlignment="Center" 
+                                            VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter Property="Background" Value="#005A9B"/>
+                            </Trigger>
+                            <Trigger Property="IsPressed" Value="True">
+                                <Setter Property="Background" Value="#004578"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- Voice Button Style -->
+        <Style x:Key="VoiceButtonStyle" TargetType="Button">
+            <Setter Property="Background" Value="#28A745"/>
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Width" Value="50"/>
+            <Setter Property="Height" Value="50"/>
+            <Setter Property="FontSize" Value="18"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border Background="{TemplateBinding Background}" 
+                                CornerRadius="25">
+                            <ContentPresenter HorizontalAlignment="Center" 
+                                            VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter Property="Background" Value="#218838"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+    </UserControl.Resources>
+    
+    <Grid Margin="20">
         <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
             <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
         
+        <!-- Header -->
+        <Border Grid.Row="0" Background="#F8F9FA" CornerRadius="12" Padding="20" Margin="0,0,0,20">
+            <StackPanel>
+                <TextBlock Text="Chat with Julie" FontSize="24" FontWeight="Bold" Foreground="#2D3748"/>
+                <TextBlock Text="Ask me anything! I'm here to help." FontSize="14" Foreground="#718096" Margin="0,5,0,0"/>
+            </StackPanel>
+        </Border>
+        
         <!-- Messages Area -->
-        <ScrollViewer Grid.Row="0" Margin="10">
-            <ListView x:Name="MessagesListView">
-                <ListView.ItemTemplate>
-                    <DataTemplate>
-                        <Border Background="LightGray" 
-                               Margin="5" 
-                               Padding="10">
-                            <StackPanel>
-                                <TextBlock Text="Role" FontWeight="Bold"/>
-                                <TextBlock Text="Message content" TextWrapping="Wrap"/>
-                            </StackPanel>
-                        </Border>
-                    </DataTemplate>
-                </ListView.ItemTemplate>
-            </ListView>
-        </ScrollViewer>
+        <Border Grid.Row="1" Background="#FAFAFA" CornerRadius="12" Margin="0,0,0,20">
+            <ScrollViewer Margin="15" VerticalScrollBarVisibility="Auto">
+                <ListBox x:Name="MessagesListView" 
+                        Background="Transparent" 
+                        BorderThickness="0"
+                        ItemsSource="{Binding Messages}"
+                        ScrollViewer.HorizontalScrollBarVisibility="Disabled">
+                    <ListBox.ItemContainerStyle>
+                        <Style TargetType="ListBoxItem">
+                            <Setter Property="Padding" Value="0"/>
+                            <Setter Property="Margin" Value="0,5"/>
+                            <Setter Property="Template">
+                                <Setter.Value>
+                                    <ControlTemplate TargetType="ListBoxItem">
+                                        <ContentPresenter/>
+                                    </ControlTemplate>
+                                </Setter.Value>
+                            </Setter>
+                        </Style>
+                    </ListBox.ItemContainerStyle>
+                    <ListBox.ItemTemplate>
+                        <DataTemplate>
+                            <Border Background="White" 
+                                   Margin="5" 
+                                   Padding="15"
+                                   CornerRadius="12">
+                                <Border.Effect>
+                                    <DropShadowEffect Color="#000000" Opacity="0.1" ShadowDepth="2" BlurRadius="8"/>
+                                </Border.Effect>
+                                <StackPanel>
+                                    <StackPanel Orientation="Horizontal" Margin="0,0,0,8">
+                                        <Border Background="#007ACC" CornerRadius="10" Padding="6,2" Margin="0,0,10,0">
+                                            <TextBlock Text="{Binding Role}" 
+                                                     FontWeight="Medium" 
+                                                     FontSize="12"
+                                                     Foreground="White"/>
+                                        </Border>
+                                        <TextBlock Text="{Binding Timestamp, StringFormat='HH:mm'}" 
+                                                 FontSize="11" 
+                                                 Foreground="#A0AEC0" 
+                                                 VerticalAlignment="Center"/>
+                                    </StackPanel>                                    <TextBlock Text="{Binding Text}" 
+                                             TextWrapping="Wrap" 
+                                             FontSize="14"
+                                             Foreground="#2D3748"
+                                             LineHeight="20"/>
+                                </StackPanel>
+                            </Border>
+                        </DataTemplate>
+                    </ListBox.ItemTemplate>
+                </ListBox>
+            </ScrollViewer>
+        </Border>
         
         <!-- Input Area -->
-        <StackPanel Grid.Row="1" 
-                   Orientation="Horizontal" 
-                   Margin="10">
-            <TextBox x:Name="MessageTextBox" 
-                    PlaceholderText="Type your message..."
-                    Width="300"
-                    Margin="0,0,10,0"/>
-            <Button Content="Send"/>
-            <Button Content="Record" Margin="10,0,0,0"/>
-        </StackPanel>
+        <Border Grid.Row="2" Background="White" CornerRadius="12" Padding="15">
+            <Border.Effect>
+                <DropShadowEffect Color="#000000" Opacity="0.1" ShadowDepth="2" BlurRadius="8"/>
+            </Border.Effect>
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+                  <TextBox x:Name="MessageTextBox" 
+                         Grid.Column="0"
+                         Style="{StaticResource ModernTextBoxStyle}"
+                         TextWrapping="Wrap"
+                         AcceptsReturn="True"
+                         MaxHeight="100"
+                         VerticalScrollBarVisibility="Auto"
+                         Text="{Binding CurrentMessage, UpdateSourceTrigger=PropertyChanged}"
+                         KeyDown="MessageTextBox_KeyDown"/>
+                  <Button Grid.Column="1" 
+                        Name="SendButton"
+                        Content="Send" 
+                        Style="{StaticResource SendButtonStyle}"
+                        Command="{Binding SendMessageCommand}"
+                        Margin="10,0"
+                        Click="SendButton_Click"/>
+                          <Button Grid.Column="2" 
+                        Name="RecordButton"
+                        Content="🎤" 
+                        Style="{StaticResource VoiceButtonStyle}"
+                        Command="{Binding StartVoiceInputCommand}"
+                        Click="RecordButton_Click"/>
+            </Grid>
+        </Border>
     </Grid>
-</Page>
+</UserControl>

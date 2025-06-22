@@ -3,6 +3,7 @@ using System.Collections.ObjectModel;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Windows.Input;
+using System.Windows;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Julie.Core.Models;
@@ -37,9 +38,7 @@ namespace Julie.UI.ViewModels
         public ICommand SendMessageCommand { get; }
         public ICommand ClearChatCommand { get; }
         public ICommand StartVoiceInputCommand { get; }
-        public ICommand StopVoiceInputCommand { get; }
-
-        public ChatViewModel(IJulieService julieService, ILogger<ChatViewModel> logger)
+        public ICommand StopVoiceInputCommand { get; }        public ChatViewModel(IJulieService julieService, ILogger<ChatViewModel> logger)
         {
             _julieService = julieService;
             _logger = logger;
@@ -52,6 +51,22 @@ namespace Julie.UI.ViewModels
 
             // Subscribe to property changes to update command states
             PropertyChanged += OnPropertyChanged;
+
+            // Add welcome message
+            AddWelcomeMessage();
+        }
+
+        private void AddWelcomeMessage()
+        {
+            var welcomeMessage = new Message
+            {
+                Role = MessageRole.System,
+                Text = "👋 Welcome to Julie AI Assistant! I'm ready to help you with any questions or tasks. Type a message or use the voice recording feature to get started.",
+                Timestamp = DateTime.Now,
+                IsComplete = true
+            };
+            
+            Messages.Add(welcomeMessage);
         }
 
         private void OnPropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
@@ -152,7 +167,7 @@ namespace Julie.UI.ViewModels
             try
             {
                 // Add to current conversation if available
-                _currentConversation?.AddMessage(message);
+                CurrentConversation?.AddMessage(message);
 
                 // Add to UI collection on UI thread
                 if (System.Threading.SynchronizationContext.Current != null)
@@ -160,9 +175,8 @@ namespace Julie.UI.ViewModels
                     Messages.Add(message);
                 }
                 else
-                {
-                    // If not on UI thread, marshal to UI thread
-                    Microsoft.UI.Dispatching.DispatcherQueue.GetForCurrentThread()?.TryEnqueue(() =>
+                {                    // If not on UI thread, marshal to UI thread
+                    Application.Current?.Dispatcher.BeginInvoke(() =>
                     {
                         Messages.Add(message);
                     });
