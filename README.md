@@ -109,7 +109,7 @@ Julie follows a clean, modular architecture with clear separation of concerns:
 
 1. **Clone the repository**
    ```bash
-   git clone https://github.com/yourusername/Julie.git
+   git clone https://github.com/infinit-X/Julie.git
    cd Julie
    ```
 
@@ -254,7 +254,7 @@ We welcome contributions! Please see our [Contributing Guidelines](CONTRIBUTING.
 
 ### 🐛 Bug Reports
 
-Please use the [GitHub Issues](https://github.com/yourusername/Julie/issues) page to report bugs.
+Please use the [GitHub Issues](https://github.com/infinit-X/Julie/issues) page to report bugs.
 
 ## 📊 Development Status
 
@@ -326,9 +326,9 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## 📞 Support
 
-- **Issues**: [GitHub Issues](https://github.com/yourusername/Julie/issues)
-- **Discussions**: [GitHub Discussions](https://github.com/yourusername/Julie/discussions)
-- **Documentation**: [Project Wiki](https://github.com/yourusername/Julie/wiki)
+- **Issues**: [GitHub Issues](https://github.com/infinit-X/Julie/issues)
+- **Discussions**: [GitHub Discussions](https://github.com/infinit-X/Julie/discussions)
+- **Documentation**: [Project Wiki](https://github.com/infinit-X/Julie/wiki)
 
 ---
 
@@ -336,6 +336,6 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 **⭐ If you find Julie helpful, please consider giving it a star! ⭐**
 
-Made with ❤️ by [Infinit-X](https://github.com/yourusername)
+Made with ❤️ by [Infinit-X](https://github.com/infinit-X)
 
 </div>
