@@ -13,15 +13,15 @@ Julie is a sophisticated AI assistant application built with .NET 8 and WPF, fea
 
 ### Main Chat Interface
 ![Julie Main Interface](assets/Screenshot%202025-06-22%20200811.png)
-*Beautiful chat interface with gradient backgrounds and modern UI design*
+*Beautiful chat interface with modern UI design*
 
 ### Settings & Configuration  
 ![Julie Settings](assets/Screenshot%202025-06-22%20200829.png)
-*Comprehensive settings panel for API configuration and preferences*
+*Pop-up to allow the permision for using mic and the screen context*
 
 ### Live Conversation
 ![Julie Live Chat](assets/Screenshot%202025-06-22%20200917.png)
-*Real-time conversation with Gemini AI showing message history and status*
+*Comprehensive settings panel for API configuration and preferences*
 
 ## ✨ Features
 
